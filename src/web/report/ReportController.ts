@@ -5,6 +5,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiServiceUnavailableResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import RestError, {
   BAD_GATEWAY_ERROR,
@@ -15,6 +16,7 @@ import { ReportStringEnum } from 'src/core/common/report/ReportStringEnum';
 import GetDataAndReport from 'src/core/common/usecase/report/GetDataAndReport';
 import Context from 'src/core/context/Context';
 
+@ApiTags('Reports')
 @Controller('/report')
 export class ReportController {
   getDataAndReportApi: GetDataAndReport;
