@@ -1,6 +1,16 @@
-import { Body, Controller, Inject, Post, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Inject,
+  Post,
+  Res,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiBody,
+  ApiConsumes,
   ApiInternalServerErrorResponse,
   ApiOkResponse,
   ApiOperation,
@@ -8,7 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
-import { ReportStringEnum } from 'src/core/common/report/ReportStringEnum';
+import { ReportProcessingResponse } from 'src/core/common/report/models/ReportProcessingResponse';
 import GetDataAndReport from 'src/core/common/usecase/report/GetDataAndReport';
 import Context from 'src/core/context/Context';
 import { mapReportStringToError } from 'src/core/utils/MapReportStringToRestError';
@@ -23,6 +33,7 @@ export class ReportController {
   }
 
   @Post('/history')
+  @ApiConsumes(`multipart/form-data`)
   @ApiOperation({
     description: `Sends an email containing a customized report.`,
   })
@@ -39,34 +50,34 @@ export class ReportController {
     description: `Data was processed successfully but the report was not sent.`,
   })
   @ApiBody({
-    description: 'The comparison difference here.',
-    required: false,
-    examples: {
-      a: {
-        summary: 'Comparison difference is 1',
-        description: `1 means that you want to compare each day's price.`,
-        value: { comparisonDifference: 1 },
-      },
-      b: {
-        summary: 'Comparison difference is 2',
-        description: `2 means that you want to compare prices every 2 days.`,
-        value: { comparisonDifference: 2 },
-      },
-      c: {
-        summary: 'Comparison difference is 7',
-        description: `7 means that you want to compare prices every 7 days.`,
-        value: { comparisonDifference: 7 },
+    schema: {
+      type: 'object',
+      properties: {
+        comparisonDifference: {
+          type: 'integer',
+          description: `<html>The difference in days to be considered while comparing prices. If nothing is sent, then <b>default is 1</b>.<br/> 2 means that you want to compare prices every 2 days.<br/>7 means that you want to compare prices every 7 days.</html>`,
+        },
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
       },
     },
   })
+  @UseInterceptors(FileInterceptor('file'))
   async getDataAndReport(
     @Body() comparisonDifference: any,
     @Res() response: Response,
+    @UploadedFile('file') file: Express.Multer.File,
   ): Promise<Response> {
-    const result: ReportStringEnum = await this.getDataAndReportApi.consume(
-      comparisonDifference.comparisonDifference,
-    );
+    const result: ReportProcessingResponse =
+      await this.getDataAndReportApi.consume(
+        comparisonDifference.comparisonDifference,
+        file,
+      );
 
-    return response.status(mapReportStringToError(result)).send(result);
+    return response
+      .status(mapReportStringToError(result.reportString))
+      .send(result);
   }
 }
