@@ -1,30 +1,22 @@
-import RestClient from 'src/core/client/RestClient';
-import TestContext from '../test/TestContext';
-import GetTestsAndProcess from './test/GetTestsAndProcess';
 import { PinoLogger } from 'nestjs-pino';
+import RestClient from 'src/core/client/RestClient';
+import GetDataAndReport from 'src/core/common/usecase/report/GetDataAndReport';
 export default class UseCaseContext {
   restClient: RestClient;
   logger: PinoLogger;
-  testContext: TestContext;
 
-  getTestAndProcess: GetTestsAndProcess;
+  getDataAndReport: GetDataAndReport;
 
   constructor({
     restClient,
-    testContext,
     logger,
   }: {
     restClient: RestClient;
-    testContext: TestContext;
     logger: PinoLogger;
   }) {
     this.restClient = restClient;
     this.logger = logger;
-    this.testContext = testContext;
 
-    this.getTestAndProcess = new GetTestsAndProcess({
-      logger,
-      testService: this.testContext.service,
-    });
+    this.getDataAndReport = new GetDataAndReport({ logger });
   }
 }
