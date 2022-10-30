@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post, Res } from '@nestjs/common';
 import {
   ApiBody,
   ApiInternalServerErrorResponse,
@@ -7,14 +7,11 @@ import {
   ApiServiceUnavailableResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import RestError, {
-  BAD_GATEWAY_ERROR,
-  INTERNAL_SERVER_ERROR,
-  SUCCESS_RESPONSE,
-} from 'src/core/common/error/types/RestError';
+import { Response } from 'express';
 import { ReportStringEnum } from 'src/core/common/report/ReportStringEnum';
 import GetDataAndReport from 'src/core/common/usecase/report/GetDataAndReport';
 import Context from 'src/core/context/Context';
+import { mapReportStringToError } from 'src/core/utils/MapReportStringToRestError';
 
 @ApiTags('Reports')
 @Controller('/report')
@@ -62,18 +59,14 @@ export class ReportController {
       },
     },
   })
-  async getDataAndReport(@Body() comparisonDifference: any): Promise<void> {
-    const res: ReportStringEnum = await this.getDataAndReportApi.consume(
+  async getDataAndReport(
+    @Body() comparisonDifference: any,
+    @Res() response: Response,
+  ): Promise<Response> {
+    const result: ReportStringEnum = await this.getDataAndReportApi.consume(
       comparisonDifference.comparisonDifference,
     );
 
-    switch (res) {
-      case ReportStringEnum.processingError:
-        throw new RestError(res, INTERNAL_SERVER_ERROR);
-      case ReportStringEnum.emailError:
-        throw new RestError(res, BAD_GATEWAY_ERROR);
-      default:
-        throw new RestError(res, SUCCESS_RESPONSE);
-    }
+    return response.status(mapReportStringToError(result)).send(result);
   }
 }
