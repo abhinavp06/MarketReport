@@ -1,5 +1,7 @@
 import { PinoLogger } from 'nestjs-pino';
+import { convertExcelToJSON } from 'src/core/utils/ConvertExcelToJSON';
 import { ReportProcessingResponse } from '../../report/models/ReportProcessingResponse';
+import { StockPriceDetails } from '../../report/models/StockPriceDetails';
 import { ReportStringEnum } from '../../report/ReportStringEnum';
 
 export default class GetDataAndReport {
@@ -16,14 +18,10 @@ export default class GetDataAndReport {
     let result: ReportProcessingResponse = this.validateFile(file);
 
     if (!result) {
-      const n: number = comparisonDifference || 1;
-
-      this.logger.info(`n = ${n}`);
-
-      result = {
-        reportString: ReportStringEnum.successResponse,
-        additionalMessage: `${file.originalname} was processed successfully! Email has been sent.`,
-      };
+      result = await this.processStockPrices(
+        comparisonDifference ? comparisonDifference : 1,
+        file,
+      );
     }
 
     return result;
@@ -51,5 +49,31 @@ export default class GetDataAndReport {
         additionalMessage: `Invalid file extension ${fileExtension}. Server only accepts .xlsx files!`,
       };
     }
+  };
+
+  private processStockPrices = async (
+    comparisonDifference: number,
+    file: Express.Multer.File,
+  ): Promise<ReportProcessingResponse> => {
+    try {
+      const stockPrices: StockPriceDetails[] = convertExcelToJSON(file);
+
+      this.logger.info(
+        `Successfully processed stock prices of ${stockPrices.length} days. Comparison difference: ${comparisonDifference}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to process ${file.originalname}. Reason: ${error}`,
+      );
+      return {
+        reportString: ReportStringEnum.processingError,
+        additionalMessage: `Failed to process file ${file.originalname}`,
+      };
+    }
+
+    return {
+      reportString: ReportStringEnum.successResponse,
+      additionalMessage: `${file.originalname} was processed successfully! Email has been sent.`,
+    };
   };
 }
