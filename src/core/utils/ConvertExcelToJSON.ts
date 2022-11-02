@@ -7,31 +7,21 @@ export const convertExcelToJSON = (
   file: Express.Multer.File,
 ): StockPriceDetails[] => {
   const currentDate: string = new Date().getTime().toString();
-
-  fs.writeFileSync(
-    `./src/core/utils/${currentDate.concat(file.originalname)}`,
-    file.buffer,
+  const filePath: string = process.env.TEMP_FILES_BASE_PATH.concat(
+    currentDate.concat(file.originalname),
   );
 
-  const workbook: WorkBook = xlsx.readFile(
-    `./src/core/utils/${currentDate.concat(file.originalname)}`,
-    {
-      dateNF: 'mm/dd/yyyy',
-    },
-  );
+  fs.writeFileSync(filePath, file.buffer);
+
+  const workbook: WorkBook = xlsx.readFile(filePath, {
+    dateNF: 'mm/dd/yyyy',
+  });
 
   const ws: WorkSheet = workbook.Sheets[workbook.SheetNames[0]];
 
   const data: unknown[] = xlsx.utils.sheet_to_json(ws, {
     raw: false,
   });
-
-  fs.writeFileSync(
-    `./src/core/utils/${currentDate.concat(
-      file.originalname.split('.')[0],
-    )}.json`,
-    JSON.stringify(data, null, 2),
-  );
 
   return mapRawStockJSONToDetailObject(data);
 };
