@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as xlsx from 'xlsx';
 import { WorkBook, WorkSheet } from 'xlsx';
 import { StockPriceDetails } from '../common/report/models/StockPriceDetails';
+import { deleteFile } from './FileUtils';
 
 export const convertExcelToJSON = (
   file: Express.Multer.File,
@@ -22,6 +23,8 @@ export const convertExcelToJSON = (
   const data: unknown[] = xlsx.utils.sheet_to_json(ws, {
     raw: false,
   });
+
+  deleteFile(filePath);
 
   return mapRawStockJSONToDetailObject(data);
 };
