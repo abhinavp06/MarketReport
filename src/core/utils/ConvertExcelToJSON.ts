@@ -35,10 +35,14 @@ const mapRawStockJSONToDetailObject = (
   return data.map((obj) => {
     return {
       date: Object.values(obj)[0],
-      price: Object.values(obj)[1],
-      open: Object.values(obj)[2],
-      high: Object.values(obj)[3],
-      low: Object.values(obj)[4],
+      price: convertPriceStringToNumber(Object.values(obj)[1]),
+      open: convertPriceStringToNumber(Object.values(obj)[2]),
+      high: convertPriceStringToNumber(Object.values(obj)[3]),
+      low: convertPriceStringToNumber(Object.values(obj)[4]),
     };
   });
+};
+
+const convertPriceStringToNumber = (stringValue: string): number => {
+  return Number(stringValue.replace(/,/g, ''));
 };

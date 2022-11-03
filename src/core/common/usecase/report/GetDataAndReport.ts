@@ -3,12 +3,21 @@ import { convertExcelToJSON } from 'src/core/utils/ConvertExcelToJSON';
 import { ReportProcessingResponse } from '../../report/models/ReportProcessingResponse';
 import { StockPriceDetails } from '../../report/models/StockPriceDetails';
 import { ReportStringEnum } from '../../report/ReportStringEnum';
+import ProcessDataAndSendEmail from './ProcessDataAndSendEmail';
 
 export default class GetDataAndReport {
   private logger: PinoLogger;
+  private processDataAndSendEmail: ProcessDataAndSendEmail;
 
-  constructor({ logger }: { logger: PinoLogger }) {
+  constructor({
+    logger,
+    processDataAndSendEmail,
+  }: {
+    logger: PinoLogger;
+    processDataAndSendEmail: ProcessDataAndSendEmail;
+  }) {
     this.logger = logger;
+    this.processDataAndSendEmail = processDataAndSendEmail;
   }
 
   async consume(
@@ -55,25 +64,44 @@ export default class GetDataAndReport {
     comparisonDifference: number,
     file: Express.Multer.File,
   ): Promise<ReportProcessingResponse> => {
+    let stockPrices: StockPriceDetails[];
     try {
-      const stockPrices: StockPriceDetails[] = convertExcelToJSON(file);
+      stockPrices = convertExcelToJSON(file);
 
-      this.logger.info(
-        `Successfully processed stock prices of ${stockPrices.length} days. Comparison difference: ${comparisonDifference}`,
-      );
+      if (
+        !this.validateComparisonDifference(comparisonDifference, stockPrices)
+      ) {
+        return {
+          reportString: ReportStringEnum.processingError,
+          additionalMessage: `Failed to process file ${file.originalname}. Comparison difference is not valid according to the number of rows in the data.`,
+        };
+      }
     } catch (error) {
       this.logger.error(
         `Failed to process ${file.originalname}. Reason: ${error}`,
       );
       return {
         reportString: ReportStringEnum.processingError,
-        additionalMessage: `Failed to process file ${file.originalname}`,
+        additionalMessage: `Failed to process file ${file.originalname}. Reason: ${error}`,
       };
     }
 
-    return {
-      reportString: ReportStringEnum.successResponse,
-      additionalMessage: `${file.originalname} was processed successfully! Email has been sent.`,
-    };
+    return this.processDataAndSendEmail.consume({
+      fileName: file.originalname,
+      stockPrices: stockPrices,
+      comparisonDifference: comparisonDifference,
+    });
+  };
+
+  private validateComparisonDifference = (
+    comparisonDifference: number,
+    stockPrices: StockPriceDetails[],
+  ): boolean => {
+    const rowsCount: number = stockPrices.length;
+
+    if (rowsCount == 0 || rowsCount == 1) return false;
+    if (stockPrices[comparisonDifference]) return true;
+
+    return false;
   };
 }
