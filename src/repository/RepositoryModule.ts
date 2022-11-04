@@ -1,9 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import TestEntityGateway from './testEntity/TestEntityGateway';
-import { PinoLogger } from 'nestjs-pino';
 import { Module } from '@nestjs/common';
+import { PinoLogger } from 'nestjs-pino';
 
-const appLogger: PinoLogger = require('pino-caller')(
+export const appLogger: PinoLogger = require('pino-caller')(
   require('pino')({
     transport: {
       target: 'pino-pretty',
@@ -17,7 +16,7 @@ const appLogger: PinoLogger = require('pino-caller')(
 
 @Module({
   imports: [],
-  providers: [{ provide: PinoLogger, useValue: appLogger }, TestEntityGateway],
-  exports: [PinoLogger, TestEntityGateway],
+  providers: [{ provide: PinoLogger, useValue: appLogger }],
+  exports: [PinoLogger],
 })
 export class RepositoryModule {}

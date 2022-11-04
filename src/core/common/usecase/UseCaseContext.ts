@@ -1,30 +1,38 @@
-import RestClient from 'src/core/client/RestClient';
-import TestContext from '../test/TestContext';
-import GetTestsAndProcess from './test/GetTestsAndProcess';
 import { PinoLogger } from 'nestjs-pino';
+import RestClient from 'src/core/client/RestClient';
+import GetDataAndReport from 'src/core/common/usecase/report/GetDataAndReport';
+import { setUpNodemailer } from 'src/web/email/SetUpNodemailer';
+import { DeleteTemporaryFiles } from './files/DeleteTemporaryFiles';
+import ProcessDataAndSendEmail from './report/ProcessDataAndSendEmail';
 export default class UseCaseContext {
   restClient: RestClient;
   logger: PinoLogger;
-  testContext: TestContext;
 
-  getTestAndProcess: GetTestsAndProcess;
+  getDataAndReport: GetDataAndReport;
+  processDataAndSendEmail: ProcessDataAndSendEmail;
+  deleteTemporaryFiles: DeleteTemporaryFiles;
 
   constructor({
     restClient,
-    testContext,
     logger,
   }: {
     restClient: RestClient;
-    testContext: TestContext;
     logger: PinoLogger;
   }) {
     this.restClient = restClient;
     this.logger = logger;
-    this.testContext = testContext;
 
-    this.getTestAndProcess = new GetTestsAndProcess({
+    this.processDataAndSendEmail = new ProcessDataAndSendEmail({ logger });
+    this.getDataAndReport = new GetDataAndReport({
       logger,
-      testService: this.testContext.service,
+      processDataAndSendEmail: this.processDataAndSendEmail,
     });
+    this.deleteTemporaryFiles = new DeleteTemporaryFiles({ logger });
+
+    this.init();
+  }
+
+  private init() {
+    setUpNodemailer();
   }
 }
