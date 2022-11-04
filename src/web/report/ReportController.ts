@@ -18,6 +18,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Response } from 'express';
+import { ReportInput } from 'src/core/common/report/models/ReportInput';
 import { ReportProcessingResponse } from 'src/core/common/report/models/ReportProcessingResponse';
 import GetDataAndReport from 'src/core/common/usecase/report/GetDataAndReport';
 import Context from 'src/core/context/Context';
@@ -61,20 +62,25 @@ export class ReportController {
           type: 'string',
           format: 'binary',
         },
+        email: {
+          type: 'string',
+          description: `The email to which the generated report is sent.`,
+        },
       },
     },
   })
   @UseInterceptors(FileInterceptor('file'))
   async getDataAndReport(
-    @Body() comparisonDifference: any,
+    @Body() reportInput: ReportInput,
     @Res() response: Response,
     @UploadedFile('file') file: Express.Multer.File,
   ): Promise<Response> {
     const result: ReportProcessingResponse =
-      await this.getDataAndReportApi.consume(
-        comparisonDifference.comparisonDifference,
-        file,
-      );
+      await this.getDataAndReportApi.consume({
+        comparisonDifference: reportInput.comparisonDifference,
+        file: file,
+        email: reportInput.email,
+      });
 
     return response
       .status(mapReportStringToError(result.reportString))

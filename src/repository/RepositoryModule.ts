@@ -2,7 +2,7 @@
 import { Module } from '@nestjs/common';
 import { PinoLogger } from 'nestjs-pino';
 
-const appLogger: PinoLogger = require('pino-caller')(
+export const appLogger: PinoLogger = require('pino-caller')(
   require('pino')({
     transport: {
       target: 'pino-pretty',

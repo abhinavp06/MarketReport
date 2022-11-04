@@ -5,6 +5,7 @@ export interface StockPriceDetails {
   high?: number;
   low?: number;
   buy?: number;
+  sell?: number;
   profit?: number;
-  final?: number;
+  totalProfit?: number;
 }

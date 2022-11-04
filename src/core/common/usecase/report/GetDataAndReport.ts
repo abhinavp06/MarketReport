@@ -20,17 +20,23 @@ export default class GetDataAndReport {
     this.processDataAndSendEmail = processDataAndSendEmail;
   }
 
-  async consume(
-    comparisonDifference: number,
-    file: Express.Multer.File,
-  ): Promise<ReportProcessingResponse> {
+  async consume({
+    comparisonDifference,
+    file,
+    email,
+  }: {
+    comparisonDifference: number;
+    file: Express.Multer.File;
+    email: string;
+  }): Promise<ReportProcessingResponse> {
     let result: ReportProcessingResponse = this.validateFile(file);
 
     if (!result) {
-      result = await this.processStockPrices(
-        comparisonDifference ? comparisonDifference : 1,
-        file,
-      );
+      result = await this.processStockPrices({
+        comparisonDifference: comparisonDifference ? comparisonDifference : 1,
+        file: file,
+        email: email,
+      });
     }
 
     return result;
@@ -60,10 +66,15 @@ export default class GetDataAndReport {
     }
   };
 
-  private processStockPrices = async (
-    comparisonDifference: number,
-    file: Express.Multer.File,
-  ): Promise<ReportProcessingResponse> => {
+  private processStockPrices = async ({
+    comparisonDifference,
+    file,
+    email,
+  }: {
+    comparisonDifference: number;
+    file: Express.Multer.File;
+    email: string;
+  }): Promise<ReportProcessingResponse> => {
     let stockPrices: StockPriceDetails[];
     try {
       stockPrices = convertExcelToJSON(file);
@@ -90,6 +101,7 @@ export default class GetDataAndReport {
       fileName: file.originalname,
       stockPrices: stockPrices,
       comparisonDifference: comparisonDifference,
+      email: email,
     });
   };
 
