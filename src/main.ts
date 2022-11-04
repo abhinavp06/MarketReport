@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { appLogger } from './repository/RepositoryModule';
 import { WebModule } from './web/WebModule';
 
 async function bootstrap() {
@@ -20,7 +21,7 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT);
 
-  console.log(
+  appLogger.info(
     `The swagger documentation can be accessed at: http://localhost:${process.env.PORT}/${process.env.SWAGGER_DOC_STRING}`,
   );
 }
