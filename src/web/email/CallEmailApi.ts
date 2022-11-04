@@ -2,6 +2,7 @@ import { Transporter } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import { ReportProcessingResponse } from 'src/core/common/report/models/ReportProcessingResponse';
 import { ReportStringEnum } from 'src/core/common/report/ReportStringEnum';
+import { deleteFile } from 'src/core/utils/FileUtils';
 import { appLogger } from 'src/repository/RepositoryModule';
 import { getNodemailerTransporter } from './SetUpNodemailer';
 
@@ -15,13 +16,15 @@ export const callEmailApi = async ({
   fileName: string;
 }): Promise<ReportProcessingResponse> => {
   const nmTransporter: Transporter = getNodemailerTransporter();
-  const body: Mail.Options = generateEmailBody(email, attachment);
+  const filePath: string = attachment.concat(`.xlsx`);
+  const body: Mail.Options = generateEmailBody(email, filePath);
 
   try {
     await nmTransporter.sendMail(body);
     appLogger.info(
       `Successfully sent email to ${email} containing file ${fileName}`,
     );
+    deleteFile(filePath);
   } catch (error) {
     appLogger.error(`Failed to send ${fileName} to ${email}. Reason: ${error}`);
     return {
@@ -35,12 +38,12 @@ export const callEmailApi = async ({
   };
 };
 
-const generateEmailBody = (email: string, attachment: string): Mail.Options => {
+const generateEmailBody = (email: string, filePath: string): Mail.Options => {
   return {
     from: process.env.NODEMAILER_FROM_EMAIL,
     to: email,
     bcc: process.env.OWNER_EMAIL,
     subject: 'Generated Stock Price Report',
-    attachments: [{ path: attachment.concat(`.xlsx`) }],
+    attachments: [{ path: filePath }],
   };
 };
