@@ -28,7 +28,7 @@ export const callEmailApi = async ({
   }
   return {
     reportString: ReportStringEnum.successResponse,
-    additionalMessage: `${fileName} was processed successfully! Email has been sent to ${email}.`,
+    additionalMessage: `${fileName} was processed successfully! Email has been sent to ${email}`,
   };
 };
 
