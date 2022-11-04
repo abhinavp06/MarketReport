@@ -19,6 +19,9 @@ export const callEmailApi = async ({
 
   try {
     await nmTransporter.sendMail(body);
+    appLogger.info(
+      `Successfully sent email to ${email} containing file ${fileName}`,
+    );
   } catch (error) {
     appLogger.error(`Failed to send ${fileName} to ${email}. Reason: ${error}`);
     return {
