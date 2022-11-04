@@ -52,7 +52,9 @@ export const logic1 = (
       }
 
       if (currentPrice) {
-        const sellPrice: number = lowPrice * 0.998;
+        const sellPrice: number = lowPrice
+          ? lowPrice * 0.998
+          : currentPrice.low;
         const profit: number = sellPrice - buyPrice;
         totalProfit = totalProfit + profit;
 

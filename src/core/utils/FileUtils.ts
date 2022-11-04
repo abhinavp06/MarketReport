@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { appLogger } from 'src/repository/RepositoryModule';
 
 export const deleteFile = (filePath: string): boolean => {
-  const fileName: string = filePath.split(`.`)[1];
+  const fileName: string = filePath.split(`.`)[0];
 
   fs.unlink(filePath, function (err) {
     if (err instanceof Error) {
