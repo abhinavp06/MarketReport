@@ -10,13 +10,9 @@ import NestJSContext from './NestJSContext';
 @Module({
   imports: [
     HttpModule,
-    ConfigModule.forRoot(
-      process.env.NODE_ENV == 'dev' || !process.env.NODE_ENV
-        ? {
-            envFilePath: `.env.${process.env.NODE_ENV || 'local'}`,
-          }
-        : {},
-    ),
+    ConfigModule.forRoot({
+      envFilePath: `.env`,
+    }),
     ScheduleModule.forRoot(),
     RepositoryModule,
   ],

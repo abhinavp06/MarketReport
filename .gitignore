@@ -1,6 +1,9 @@
 # generated excel files
 *.xlsx
 
+#env
+.env
+
 # compiled output
 /dist
 /node_modules
