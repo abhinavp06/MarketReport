@@ -17,13 +17,14 @@ export const logic1 = (
     );
 
     let currentPrice: StockPriceDetails = stockPrices[i];
+    let lowPrice = 0;
 
     if (currentPrice.high > sortByKey(previousPrices, 'high')[0].high)
       enteredTrade = true;
 
     if (enteredTrade) {
       const buyPrice: number =
-        previousPrices[previousPrices.length - 1].high * 1.002;
+        sortByKey(previousPrices, 'high')[0].high * 1.002;
       currentPrice.buy = buyPrice;
 
       while (enteredTrade) {
@@ -41,13 +42,17 @@ export const logic1 = (
             !currentPrice ||
             currentPrice.low <
               sortByKey(previousPrices, 'low')[previousPrices.length - 1].low
-          )
+          ) {
             enteredTrade = false;
+            lowPrice = sortByKey(previousPrices, 'low')[
+              previousPrices.length - 1
+            ].low;
+          }
         }
       }
 
       if (currentPrice) {
-        const sellPrice: number = stockPrices[i - 1].low * 0.998;
+        const sellPrice: number = lowPrice * 0.998;
         const profit: number = sellPrice - buyPrice;
         totalProfit = totalProfit + profit;
 
