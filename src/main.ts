@@ -21,9 +21,13 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT);
 
-  appLogger.info(
-    `The swagger documentation can be accessed at: http://localhost:${process.env.PORT}/${process.env.SWAGGER_DOC_STRING}`,
-  );
+  process.env.NODE_ENV === 'local'
+    ? appLogger.info(
+        `The swagger documentation can be accessed at: http://localhost:${process.env.PORT}/${process.env.SWAGGER_DOC_STRING}`,
+      )
+    : appLogger.info(
+        `The swagger documentation can be accessed at: ${process.env.CYCLIC_BASE_URL}/documentation`,
+      );
 }
 
 bootstrap();
