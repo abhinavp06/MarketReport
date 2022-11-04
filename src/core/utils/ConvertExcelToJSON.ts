@@ -8,8 +8,10 @@ export const convertExcelToJSON = (
   file: Express.Multer.File,
 ): StockPriceDetails[] => {
   const currentDate: string = new Date().getTime().toString();
-  const filePath: string = process.env.TEMP_FILES_BASE_PATH.concat(
-    currentDate.concat(file.originalname),
+  const filePath: string = `.`.concat(
+    process.env.TEMP_FILES_BASE_PATH.concat(
+      currentDate.concat(file.originalname),
+    ),
   );
 
   fs.writeFileSync(filePath, file.buffer);

@@ -17,11 +17,15 @@ export class DeleteTemporaryFiles {
     let fileCounter = 0;
     let totalFileCounter = 0;
 
-    const files: string[] = fs.readdirSync(process.env.TEMP_FILES_BASE_PATH);
+    const files: string[] = fs.readdirSync(
+      `.`.concat(process.env.TEMP_FILES_BASE_PATH),
+    );
 
     files.forEach((file) => {
       const fileExtension: string = file.substring(file.indexOf(`.`));
-      const filePath: string = process.env.TEMP_FILES_BASE_PATH.concat(file);
+      const filePath: string = `.`.concat(
+        process.env.TEMP_FILES_BASE_PATH.concat(file),
+      );
 
       if (fileExtension === `.xlsx`) {
         totalFileCounter++;
