@@ -1,36 +1,38 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+A simple microservice which takes in an excel file containing the price history of a stock in the following format:
+
+| Date         | Price     | Open   | High    | Low    |
+| :-----:      | :---:     | :---:  | :---:   | :---:  |
+| Apr 11, 2022 | 2610.2    | 2600   | 2638.55 | 2583   |
+| Apr 12, 2022 | 2561.05   | 2587   | 2602.6  | 2555.4 |
+
+It generates an excel file with the format:
+
+| Date         | Price     | Open   | High    | Low    | Buy     | Sell    |  Profit | Total Profit |
+| :-----:      | :---:     | :---:  | :---:   | :---:  | :---:   | :---:   | :---:   |   :---:      |
+| Apr 11, 2022 | 2610.2    | 2600   | 2638.55 | 2583   | 2630.25 |         |         |              |
+| Apr 12, 2022 | 2561.05   | 2587   | 2602.6  | 2555.4 |         | 2554.88 | -75.37  | -75.37       |
+
+Check out the hosted microservice [here](https://abhinavp06-marketreportgenerator.cyclic.app/documentation)
 
 ## Installation
 
 ```bash
 $ npm install
 ```
+
+## ENV Variables
+
+The application uses the following env variables:
+    PORT= The desired port number
+    NODE_ENV= The node environment
+    SWAGGER_DOC_STRING= The swagger documentation can have a custom string appended to the base localhost url. Example: http://localhost:3010/**documentation**
+    TEMP_FILES_BASE_PATH= The folder where the temporary generated files are stored
+    NODEMAILER_FROM_EMAIL= The google account with which you want to send emails
+    NODEMAILER_FROM_PASSWORD= The password for that google account
+    OWNER_EMAIL= While sending the email to the requested email address, the service also BCC's the email content to this owner email address.
+    CYCLIC_BASE_URL= Base URL for the hosted microservice
 
 ## Running the app
 
@@ -41,33 +43,43 @@ $ npm run start
 # watch mode
 $ npm run start:dev
 
+#debug mode
+$ npm run start:debug
+
 # production mode
 $ npm run start:prod
+
+# reset (delete dist, node_modules, package-lock.json and reinstall packages)
+$ npm run reset
 ```
 
-## Test
+The swagger documentation can be found on: http://localhost:<PORT NUMBER>/<SWAGGER DOC STRING>
 
-```bash
-# unit tests
-$ npm run test
+## Workflow
 
-# e2e tests
-$ npm run test:e2e
+As of now there is only 1 API in this microservice. It takes in 3 parameters:
+  - **Comparison difference**: This is the amount of days with which the current day's price will be checked with.
+  - **File**: The excel file with the described format above.
+  - **Email**: The email address to which you want the generated file to be sent to.
 
-# test coverage
-$ npm run test:cov
-```
+There are certain validations for the file like it's extension type (only accepts xlsx) and if the user has even input a file or not.
 
-## Support
+After these validations have passed, the file is stored in a /tmp folder using the **[fs](https://nodejs.org/api/fs.html)** library.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+To avoid concurrency in the file names, I have appended a date string w/ the file name (although one can use uuid as well).
+
+Then the **[xlsx](https://www.npmjs.com/package/xlsx)** library is used to read this excel file, extract the data and convert it to a JSON object. Then the file is deleted.
+
+Later on, the operations and main logic are applied to this JSON object and a new excel file is generated with the result.
+
+It is stored in the /tmp folder and deleted after successfully sending an email.
+
+I have also set up a cron job to delete the files in the /tmp directory incase there was an error while trying to delete the files during the normal flow.
+
+## Why store the files in a /tmp folder?
+The usecase was pretty small (only one user was going to use this microservice). Will look into different file storage options to scale with.
 
 ## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**LinkedIn:**  [Abhinav Parashar](https://www.linkedin.com/in/abhinavp06/)
 
-## License
-
-Nest is [MIT licensed](LICENSE).
