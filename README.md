@@ -25,14 +25,14 @@ $ npm install
 ## ENV Variables
 
 The application uses the following env variables:
-    PORT= The desired port number  
-    NODE_ENV= The node environment  
-    SWAGGER_DOC_STRING= The swagger documentation can have a custom string appended to the base localhost url. Example: http://localhost:3010/**documentation**  
-    TEMP_FILES_BASE_PATH= The folder where the temporary generated files are stored  
-    NODEMAILER_FROM_EMAIL= The google account with which you want to send emails  
-    NODEMAILER_FROM_PASSWORD= The password for that google account  
-    OWNER_EMAIL= While sending the email to the requested email address, the service also BCC's the email content to this owner email address  
-    CYCLIC_BASE_URL= Base URL for the hosted microservice  
+  **PORT**= The desired port number  
+  **NODE_ENV**= The node environment  
+  **SWAGGER_DOC_STRING**= The swagger documentation can have a custom string appended to the base localhost url. Example: http://localhost:3010/documentation   
+  **TEMP_FILES_BASE_PATH**= The folder where the temporary generated files are stored  
+  **NODEMAILER_FROM_EMAIL**= The google account with which you want to send emails  
+  **NODEMAILER_FROM_PASSWORD**= The password for that google account  
+  **OWNER_EMAIL**= While sending the email to the requested email address, the service also BCCs the email content to this owner email address  
+  **CYCLIC_BASE_URL**= Base URL for the hosted microservice  
 
 ## Running the app
 
