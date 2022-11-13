@@ -6,6 +6,8 @@ import { WebModule } from './web/WebModule';
 async function bootstrap() {
   const app = await NestFactory.create(WebModule);
 
+  app.enableCors();
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle(`Market Report API Documentation`)
     .setDescription(`Market Report documentation.`)
